@@ -1,0 +1,74 @@
+{# templates/dette/index.html.twig #}
+
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des Dettes{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card p-3">
+                <p><strong>Nom :</strong> {{ client.surname }}</p>
+                <p><strong>Téléphone :</strong> {{ client.telephone }}</p>
+            </div>
+        </div>
+        <div class="col-md-6 text-end">
+            <div class="card p-3 bg-info text-white">
+                <p><strong>Total Montant :</strong> {{ totalAmount }} </p>
+            </div>
+        </div>
+    </div>
+
+    <table class="table table-bordered table-striped text-center mt-3">
+        <thead class="thead-dark">
+            <tr>
+                <th>Date</th>
+                <th>Montant</th>
+                <th>Montant Versé</th>
+                <th>Montant Restant</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for dette in dettes %}
+                <tr>
+                    <td>{{ dette.getVirtualDate()|date('Y-m-d') }}</td>
+                    <td>{{ dette.montant }} </td>
+                    <td>{{ dette.montantVerse }} </td>
+                    <td>{{ dette.montant - dette.montantVerse }} </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="4" class="text-center">Aucune dette trouvée.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="d-flex justify-content-end mt-4">
+        <nav aria-label="Pagination">
+            <ul class="pagination">
+                {% if currentPage > 1 %}
+                    <li class="page-item">
+                        <a class="btn btn-info" href="{{ path('app_dette', { clientId: client.id, page: currentPage - 1 }) }}" class="page-link btn btn-info">Précédent</a>
+                    </li>
+                {% endif %}
+                
+                {% for page in 1..totalPages %}
+                    <li class="page-item {{ page == currentPage ? 'active' : '' }}">
+                        <a class="btn btn-info" href="{{ path('app_dette', { clientId: client.id, page: page }) }}" class="page-link btn btn-info">{{ page }}</a>
+                    </li>
+                {% endfor %}
+                
+                {% if currentPage < totalPages %}
+                    <li class="page-item">
+                        <a class="btn btn-info"href="{{ path('app_dette', { clientId: client.id, page: currentPage + 1 }) }}" class="page-link btn btn-info">Suivant</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+</div>
+{% endblock %}
