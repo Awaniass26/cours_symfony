@@ -1,7 +1,5 @@
 <?php
 
-// src/Controller/ClientController.php
-
 namespace App\Controller;
 
 use App\Entity\Client;
@@ -16,14 +14,11 @@ class ClientController extends AbstractController
     #[Route('/client-Liste', name: 'app_client')]
     public function index(Request $request, EntityManagerInterface $entityManager): Response
     {
-        // Récupérer tous les clients depuis la base de données
         $clientsQuery = $entityManager->getRepository(Client::class)->createQueryBuilder('c');
 
-        // Récupérer les paramètres de filtrage de la requête
         $surname = $request->query->get('surname');
         $telephone = $request->query->get('telephone');
 
-        // Appliquer les filtres si les valeurs sont fournies
         if ($surname) {
             $clientsQuery->andWhere('c.surname LIKE :surname')
                           ->setParameter('surname', '%' . $surname . '%');
@@ -33,28 +28,28 @@ class ClientController extends AbstractController
                           ->setParameter('telephone', '%' . $telephone . '%');
         }
 
-        $totalClientsQuery = clone $clientsQuery; // Cloner la requête pour compter sans les limites
+        $totalClientsQuery = clone $clientsQuery; 
         $totalClients = count($totalClientsQuery->getQuery()->getResult());
 
-        // Pagination
-        $page = $request->query->getInt('page', 1); // Page actuelle, par défaut 1
-        $limit = 8; // Nombre de clients par page
-        $offset = ($page - 1) * $limit; // Calculer l'offset
+        
+        $page = $request->query->getInt('page', 1); 
+        $limit = 8; 
+        $offset = ($page - 1) * $limit;
 
-        // Récupérer les clients filtrés avec pagination
-        $clients = $clientsQuery->setFirstResult($offset) // Début de la pagination
-                                ->setMaxResults($limit) // Limite
+        
+        $clients = $clientsQuery->setFirstResult($offset) 
+                                ->setMaxResults($limit) 
                                 ->getQuery()
                                 ->getResult();
 
-        // Compter le total de clients pour la pagination
-        $totalPages = ceil($totalClients / $limit); // Nombre total de pages
+        
+        $totalPages = ceil($totalClients / $limit); 
 
         return $this->render('client/index.html.twig', [
             'clients' => $clients,
             'currentPage' => $page,
             'totalPages' => $totalPages,
-            'surname' => $surname, // Assure-toi que ces variables sont également passées
+            'surname' => $surname, 
             'telephone' => $telephone,
         ]);
     }

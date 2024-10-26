@@ -3,7 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Client;
-use App\Entity\Debt;
+
 
 use App\Entity\Dette;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -15,9 +15,9 @@ use Knp\Component\Pager\PaginatorInterface;
 
 class DetteController extends AbstractController
 {
-    private $paginator; // Declare a private variable for paginator
+    private $paginator; 
 
-    public function __construct(PaginatorInterface $paginator) // Inject paginator through the constructor
+    public function __construct(PaginatorInterface $paginator) 
     {
         $this->paginator = $paginator;
     }
@@ -31,20 +31,20 @@ class DetteController extends AbstractController
         $dette->setVirtualDate(new \DateTime());
         $client = $entityManager->getRepository(Client::class)->find($clientId);
 
-        // Fetch debts for the client
+      
         $debtsQuery = $entityManager->getRepository(Dette::class)->createQueryBuilder('d')
             ->where('d.client = :client')
             ->setParameter('client', $client)
             ->getQuery();
 
-        // Use the injected paginator
+      
         $dettes = $this->paginator->paginate(
             $debtsQuery,
-            $request->query->getInt('page', 1), // Current page number
-            8 // Items per page
+            $request->query->getInt('page', 1), 
+            8 
         );
 
-        // Calculate total amount
+      
         $totalAmount = array_sum(array_map(fn($dette) => $dette->getMontant(), $dettes->getItems()));
 
         $currentPage = $dettes->getCurrentPageNumber();

@@ -16,7 +16,7 @@
                 <input type="text" name="telephone" placeholder="Téléphone" class="form-control " value="{{ app.request.get('telephone') }}">
                 <button type="submit" class="btn btn-info">Filtrer</button>
         </form>
-    </div>
+    </div>                         X                                                                                             
 
     <table class="table table-hover table-bordered mt-3">
     <thead class="bg-info text-white">
@@ -37,7 +37,7 @@
                 <td class="text-center">{{ client.adresse }}</td>
                 <td class="text-center">
                     <a href="{{ path('app_dette', { clientId: client.id }) }}" class="btn btn-dark">Dettes</a>
- <!-- Bouton Dettes -->
+
                 </td>
             </tr>
         {% else %}
