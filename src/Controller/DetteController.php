@@ -3,8 +3,6 @@
 namespace App\Controller;
 
 use App\Entity\Client;
-use App\Entity\Debt;
-
 use App\Entity\Dette;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -24,38 +22,45 @@ class DetteController extends AbstractController
 
 
     #[Route('/dette/{clientId}', name: 'app_dette')]
-    public function index($clientId, Request $request, EntityManagerInterface $entityManager): Response
-    {
-        $dette = new Dette();
-        
-        $dette->setVirtualDate(new \DateTime());
-        $client = $entityManager->getRepository(Client::class)->find($clientId);
+public function index($clientId, Request $request, EntityManagerInterface $entityManager): Response
+{
+    $client = $entityManager->getRepository(Client::class)->find($clientId);
 
-        // Fetch debts for the client
-        $debtsQuery = $entityManager->getRepository(Dette::class)->createQueryBuilder('d')
-            ->where('d.client = :client')
-            ->setParameter('client', $client)
-            ->getQuery();
+    // Créez la requête de base pour récupérer les dettes
+    $debtsQuery = $entityManager->getRepository(Dette::class)->createQueryBuilder('d')
+        ->where('d.client = :client')
+        ->setParameter('client', $client);
 
-        // Use the injected paginator
-        $dettes = $this->paginator->paginate(
-            $debtsQuery,
-            $request->query->getInt('page', 1), // Current page number
-            8 // Items per page
-        );
-
-        // Calculate total amount
-        $totalAmount = array_sum(array_map(fn($dette) => $dette->getMontant(), $dettes->getItems()));
-
-        $currentPage = $dettes->getCurrentPageNumber();
-        $totalPages = ceil($dettes->getTotalItemCount() / 8);
-
-        return $this->render('dette/index.html.twig', [
-            'client' => $client,
-            'dettes' => $dettes,
-            'totalAmount' => $totalAmount,
-            'currentPage' => $currentPage,
-            'totalPages' => $totalPages,
-        ]);
+    // Appliquer le filtre de statut
+    $status = $request->query->get('status');
+    if ($status === 'solde') {
+        $debtsQuery->andWhere('d.montant = d.montantVerse');
+    } elseif ($status === 'non_solde') {
+        $debtsQuery->andWhere('d.montant > d.montantVerse');
     }
+
+    // Paginons les résultats
+    $dettes = $this->paginator->paginate(
+        $debtsQuery->getQuery(),
+        $request->query->getInt('page', 1),
+        8
+    );
+
+    // Calcul du montant total
+    $totalAmount = array_sum(array_map(fn($dette) => $dette->getMontant(), $dettes->getItems()));
+
+    $currentPage = $dettes->getCurrentPageNumber();
+    $totalPages = ceil($dettes->getTotalItemCount() / 8);
+
+    return $this->render('dette/index.html.twig', [
+        'client' => $client,
+        'dettes' => $dettes,
+        'totalAmount' => $totalAmount,
+        'currentPage' => $currentPage,
+        'totalPages' => $totalPages,
+        'status' => $status, // Passer le statut au template pour l'affichage
+    ]);
+}
+
+    
 }
