@@ -1,36 +1,59 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Créer un Client{% endblock %}
+{% block title %}Créer un Client
+{% endblock %}
 
 {% block body %}
-    <div class="d-flex justify-content-center">
-        <div class="col-md-6 ">
-            <h1 class="mt-5 mb-4 text-center">Créer un Client</h1>
-            <div class="border p-4 rounded shadow-sm">
-            <form method="POST" action="{{ path('app_client_create') }}">
-                <div class="form-group">
-                    <label for="surname">Surname</label>
-                    <input type="text" id="surname" name="surname" class="form-control" required>
-                    {% if errors.surname is defined %}
-                        <small class="text-danger">{{ errors.surname }}</small>
-                    {% endif %}
-                </div>
-                <div class="form-group mt-3">
-                    <label for="telephone">Téléphone</label>
-                    <input type="text" id="telephone" name="telephone" class="form-control" required>
-                    {% if errors.telephone is defined %}
-                        <small class="text-danger">{{ errors.telephone }}</small>
-                    {% endif %}
-                </div>
-                <div class="form-group mt-3">
-                    <label for="adresse">Adresse</label>
-                    <input type="text" id="adresse" name="adresse" class="form-control" required>
-                </div>
-                <div class="text-center mt-4 px-4 py-2">
-                    <button type="submit" class="btn btn-info px-5 ">Créer</button>
-                </div>
-            </form>
-            </div>
-        </div>
-    </div>
+	<div class="d-flex justify-content-center">
+		<div class="col-md-6 ">
+			<h1 class="mt-5 mb-4 text-center">Créer un Client</h1>
+			<div class="border p-4 rounded shadow-sm">
+				<form
+					method="POST" action="{{ path('app_client_create') }}">
+					<!-- Champs Client existants -->
+					<div class="form-group">
+						<label for="surname">Surname</label>
+						<input type="text" id="surname" name="surname" class="form-control" required>
+						{% if errors.surname is defined %}
+							<small class="text-danger">{{ errors.surname }}</small>
+						{% endif %}
+					</div>
+					<div class="form-group mt-3">
+						<label for="telephone">Téléphone</label>
+						<input type="text" id="telephone" name="telephone" class="form-control" required>
+						{% if errors.telephone is defined %}
+							<small class="text-danger">{{ errors.telephone }}</small>
+						{% endif %}
+					</div>
+					<div class="form-group mt-3">
+						<label for="adresse">Adresse</label>
+						<input type="text" id="adresse" name="adresse" class="form-control" required>
+					</div>
+
+					<!-- Champs User (Compte) -->
+					<div class="form-group mt-3">
+						<label for="nom">Nom</label>
+						<input type="text" id="nom" name="nom" class="form-control" required>
+					</div>
+					<div class="form-group mt-3">
+						<label for="prenom">Prenom</label>
+						<input type="text" id="prenom" name="prenom" class="form-control" required>
+					</div>
+					<div class="form-group mt-3">
+						<label for="login">Login</label>
+						<input type="text" id="login" name="login" class="form-control" required>
+					</div>
+					<div class="form-group mt-3">
+						<label for="password">Password</label>
+						<input type="password" id="password" name="password" class="form-control" required>
+					</div>
+
+					<div class="text-center mt-4 px-4 py-2">
+						<button type="submit" class="btn btn-info px-5">Créer</button>
+					</div>
+				</form>
+
+			</div>
+		</div>
+	</div>
 {% endblock %}
