@@ -1,0 +1,47 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détails de la Dette{% endblock %}
+
+{% block body %}
+    <div class="container mt-5">
+        <h2 class="text-center mb-4">Détails de la Dette #{{ dette.id }}</h2>
+        
+        <div class="card p-4 mb-4 shadow-sm">
+            <h5 class="card-title">Montant Total : {{ dette.montant  }}</h5>
+            <p class="card-text">
+                Montant Versé : {{ dette.montantVerse}}<br>
+                Client : {{ dette.client.surname }}<br>
+                Date de Création : {{ dette.dateAt | date('d/m/Y') }}<br>
+                Statut : 
+                {% if dette.montant == dette.montantVerse %}
+                    <span class="text-success">Soldée</span>
+                {% else %}
+                    <span class="text-danger">Non Soldée</span>
+                {% endif %}
+            </p>
+        </div>
+
+        <h4 class="mb-3">Historique des Paiements</h4>
+        
+        {% if paiements is not empty %}
+            <table class="table table-bordered table-striped">
+                <thead class="bg-info text-white">
+                    <tr>
+                        <th>Date</th>
+                        <th>Montant</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for paiement in paiements %}
+                        <tr>
+                            <td>{{ paiement.dateAt|date('Y-m-d') }}</td>
+                            <td>{{ paiement.montant }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="text-center text-muted">Aucun paiement enregistré pour cette dette.</p>
+        {% endif %}
+    </div>
+{% endblock %}

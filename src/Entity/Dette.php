@@ -3,14 +3,13 @@
 namespace App\Entity;
 
 use App\Repository\DetteRepository;
-use Doctrine\DBAL\Types\Types;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: DetteRepository::class)]
 class Dette
 {
-
-    private \DateTimeInterface $date;
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -19,14 +18,25 @@ class Dette
     #[ORM\Column]
     private ?float $montant = null;
 
+    #[ORM\ManyToOne(inversedBy: 'dettes')]
+    private ?Client $client = null;
+
+    /**
+     * @var Collection<int, Paiement>
+     */
+    #[ORM\OneToMany(targetEntity: Paiement::class, mappedBy: 'dette')]
+    private Collection $paiements;
+
+    #[ORM\Column]
+    private ?\DateTimeImmutable $dateAt = null;
+
     #[ORM\Column]
     private ?float $montantVerse = null;
 
-    #[ORM\ManyToOne(inversedBy: 'dettes')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?Client $client = null;
-
-    
+    public function __construct()
+    {
+        $this->paiements = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -45,18 +55,6 @@ class Dette
         return $this;
     }
 
-    public function getMontantVerse(): ?float
-    {
-        return $this->montantVerse;
-    }
-
-    public function setMontantVerse(float $montantVerse): static
-    {
-        $this->montantVerse = $montantVerse;
-
-        return $this;
-    }
-
     public function getClient(): ?Client
     {
         return $this->client;
@@ -69,21 +67,57 @@ class Dette
         return $this;
     }
 
-
-    // Example of a virtual date property
-    public function getVirtualDate(): ?\DateTimeInterface
+    /**
+     * @return Collection<int, Paiement>
+     */
+    public function getPaiements(): Collection
     {
-        // Return the date, you can customize this method to return a default date if needed
-        return $this->date ?? new \DateTime(); // This is just an example
+        return $this->paiements;
     }
 
-
-    public function setVirtualDate(?\DateTimeInterface $virtualDate): self
+    public function addPaiement(Paiement $paiement): static
     {
-        $this->date = $virtualDate;
+        if (!$this->paiements->contains($paiement)) {
+            $this->paiements->add($paiement);
+            $paiement->setDette($this);
+        }
 
-        return $this; // For method chaining
+        return $this;
     }
 
-    
+    public function removePaiement(Paiement $paiement): static
+    {
+        if ($this->paiements->removeElement($paiement)) {
+            // set the owning side to null (unless already changed)
+            if ($paiement->getDette() === $this) {
+                $paiement->setDette(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getDateAt(): ?\DateTimeImmutable
+    {
+        return $this->dateAt;
+    }
+
+    public function setDateAt(\DateTimeImmutable $dateAt): static
+    {
+        $this->dateAt = $dateAt;
+
+        return $this;
+    }
+
+    public function getMontantVerse(): ?float
+    {
+        return $this->montantVerse;
+    }
+
+    public function setMontantVerse(float $montantVerse): static
+    {
+        $this->montantVerse = $montantVerse;
+
+        return $this;
+    }
 }

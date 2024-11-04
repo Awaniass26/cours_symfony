@@ -1,0 +1,93 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des Dettes
+{% endblock %}
+
+{% block body %}
+	<div class="container mt-5">
+		<h1 class="text-center">Liste des Dettes</h1>
+		<form method="get" class="row mb-5 mt-5 d-flex justify-content-between">
+			<div class="d-flex">
+				<select name="clientId" class="form-control me-2">
+					<option>Clients</option>
+					{% for client in clients %}
+						<option value="{{ client.id }}" {% if client.id == clientId %} selected {% endif %}>
+							{{ client.surname }}
+						</option>
+					{% endfor %}
+				</select>
+				<input type="date" id="dateAt" name="dateAt" class="form-control" value="{{ dateAt ? dateAt|date('Y-m-d') : '' }}">
+				<select name="status" class="form-control me-2">
+					<option>Statuts</option>
+					<option value="solde" {% if status == 'solde' %} selected {% endif %}>Soldé</option>
+					<option value="non_solde" {% if status == 'non_solde' %} selected {% endif %}>Non Soldé</option>
+				</select>
+				<button type="submit" class="btn btn-info">Filtrer</button>
+
+			</div>
+		</form>
+
+		<table class="table table-bordered table-striped text-center mt-3">
+			<thead class="thead-dark">
+				<tr>
+					<th>Date</th>
+					<th>Montant</th>
+					<th>Montant Versé</th>
+					<th>Montant Restant</th>
+					<th>Statut</th>
+					<th>Paiement</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for dette in dettes %}
+					<tr>
+						<td>{{ dette.dateAt|date('Y-m-d') }}</td>
+						<td>{{ dette.montant }}</td>
+						<td>{{ dette.montantVerse }}</td>
+						<td>{{ dette.montant - dette.montantVerse }}</td>
+						<td>
+							{% if dette.montant == dette.montantVerse %}
+								<span class="text-success">Soldé</span>
+							{% else %}
+								<span class="text-danger">Non Soldé</span>
+							{% endif %}
+						</td>
+						<td>
+							<a href="{{ path('create_paiement', { detteId: dette.id }) }}" class="btn btn-info">Enregistrer un Paiement</a>
+							<a href="{{ path('dette_details', { id: dette.id }) }}" class="btn btn-dark">Voir les Détails</a>
+						</td>
+
+					</tr>
+				{% else %}
+					<tr>
+						<td colspan="5" class="text-center">Aucune dette trouvée.</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+
+		<div class="d-flex justify-content-end mt-4">
+			<nav aria-label="Pagination">
+				<ul class="pagination">
+					{% if currentPage > 1 %}
+						<li class="page-item">
+							<a class="btn btn-info" href="{{ path('dette_list', { page: currentPage - 1, clientId: clientId, Date: Date, status: status }) }}">Précédent</a>
+						</li>
+					{% endif %}
+
+					{% for page in 1..totalPages %}
+						<li class="page-item {{ page == currentPage ? 'active' : '' }}">
+							<a class="btn btn-info" href="{{ path('dette_list', { page: page, clientId: clientId, dateAt: dateAt, status: status }) }}">{{ page }}</a>
+						</li>
+					{% endfor %}
+
+					{% if currentPage < totalPages %}
+						<li class="page-item">
+							<a class="btn btn-info" href="{{ path('dette_list', { page: currentPage + 1, clientId: clientId, dateAt: dateAt, status: status }) }}">Suivant</a>
+						</li>
+					{% endif %}
+				</ul>
+			</nav>
+		</div>
+	</div>
+{% endblock %}

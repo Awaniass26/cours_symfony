@@ -1,0 +1,94 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dettes de {{ client.surname }}{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Dettes de {{ client.surname }}</h1>
+
+    <form method="get" class="mb-3">
+    <div class="row align-items-end g-3">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="dateAt" class="form-label">Date à partir de</label>
+                <input type="date" id="dateAt" name="dateAt" class="form-control" value="{{ dateAt ? dateAt|date('Y-m-d') : '' }}">
+            </div>
+        </div>
+
+       
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="status" class="form-label">Statut</label>
+                <select id="status" name="status" class="form-select">
+                    <option value="">Tous</option>
+                    <option value="solde" {% if status == 'solde' %}selected{% endif %}>Soldé</option>
+                    <option value="non_solde" {% if status == 'non_solde' %}selected{% endif %}>Non soldé</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <button type="submit" class="btn btn-info w-100">Filtrer</button>
+        </div>
+    </div>
+</form>
+
+
+    <table class="table table-hover table-bordered mt-3">
+        <thead class="bg-info text-white">
+            <tr>
+                <th class="text-center">ID</th>
+                <th class="text-center">Montant</th>
+                <th class="text-center">Montant Versé</th>
+                <th class="text-center">Date</th>
+                <th class="text-center">Statut</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for dette in dettes %}
+                <tr>
+                    <td class="text-center">{{ dette.id }}</td>
+                    <td class="text-center">{{ dette.montant }}</td>
+                    <td class="text-center">{{ dette.montantVerse }}</td>
+                    <td class="text-center">{{ dette.dateAt|date('Y-m-d') }}</td>
+                    <td class="text-center">
+                        {% if dette.montant == dette.montantVerse %}
+                            <span class="text-success">Soldé</span>
+                        {% else %}
+                            <span class="text-danger">Non soldé</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="5" class="text-center">Aucune dette trouvée pour ce client.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="d-flex justify-content-end mt-3">
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                {% if currentPage > 1 %}
+                    <li class="page-item">
+                        <a class="page-link bg-info text-white" href="{{ path('client_dettes', { clientId: client.id, page: currentPage - 1 }) }}">Précédent</a>
+                    </li>
+                {% endif %}
+
+                {% for page in 1..totalPages %}
+                    <li class="page-item {% if page == currentPage %}active{% endif %}">
+                        <a class="page-link bg-info text-white" href="{{ path('client_dettes', { clientId: client.id, page: page }) }}">{{ page }}</a>
+                    </li>
+                {% endfor %}
+
+                {% if currentPage < totalPages %}
+                    <li class="page-item">
+                        <a class="page-link bg-info text-white" href="{{ path('client_dettes', { clientId: client.id, page: currentPage + 1 }) }}">Suivant</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+</div>
+{% endblock %}
