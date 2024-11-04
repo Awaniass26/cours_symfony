@@ -18,20 +18,20 @@ class Client
     #[ORM\Column(length: 20 , unique: true)]
     private ?string $surname = null;
 
-    #[ORM\Column(length: 9, unique:true)]
+    #[ORM\Column(length: 15, unique:true)]
     private ?string $telephone = null;
 
     #[ORM\Column(length: 25)]
     private ?string $adresse = null;
 
-    #[ORM\OneToOne(inversedBy: 'client', cascade: ['persist', 'remove'])]
-    private ?User $compte = null;
-
     /**
      * @var Collection<int, Dette>
      */
-    #[ORM\OneToMany(targetEntity: Dette::class, mappedBy: 'client')]
+    #[ORM\OneToMany(targetEntity: Dette::class, mappedBy: 'client', cascade: ['persist'])]
     private Collection $dettes;
+
+    #[ORM\OneToOne(cascade: ['persist', 'remove'])]
+    private ?User $compte = null;
 
     public function __construct()
     {
@@ -79,18 +79,6 @@ class Client
         return $this;
     }
 
-    public function getCompte(): ?User
-    {
-        return $this->compte;
-    }
-
-    public function setCompte(?User $compte): static
-    {
-        $this->compte = $compte;
-
-        return $this;
-    }
-
     /**
      * @return Collection<int, Dette>
      */
@@ -117,6 +105,18 @@ class Client
                 $dette->setClient(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getCompte(): ?User
+    {
+        return $this->compte;
+    }
+
+    public function setCompte(?User $compte): static
+    {
+        $this->compte = $compte;
 
         return $this;
     }
