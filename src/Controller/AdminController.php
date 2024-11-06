@@ -14,7 +14,6 @@ class AdminController extends AbstractController
     {   
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-        // Vous pouvez ici préparer les données à afficher dans le tableau de bord de l'administration
         return $this->render('admin/dashboard.html.twig', [
             'controller_name' => 'AdminController',
         ]);

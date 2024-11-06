@@ -11,6 +11,8 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+
 
 class DetteController extends AbstractController
 {
@@ -22,41 +24,42 @@ class DetteController extends AbstractController
     }
 
     #[Route('/create-dette', name: 'create_dette')]
-    public function create(Request $request, EntityManagerInterface $entityManager): Response
-    {
-        $dette = new Dette();
-        $clients = $entityManager->getRepository(Client::class)->findAll();
+    public function create(Request $request, EntityManagerInterface $entityManager, ValidatorInterface $validator): Response
+{
+    $dette = new Dette();
+    $clients = $entityManager->getRepository(Client::class)->findAll();
 
-        if ($request->isMethod('POST')) {
-            $montant = $request->request->get('montant');
-            $montantVerse = $request->request->get('montantVerse');
-            $clientId = $request->request->get('client');
-            $dateAt = $request->request->get('dateAt'); // La date est attendue dans le champ dateAt
+    if ($request->isMethod('POST')) {
+        $montant = $request->request->get('montant');
+        $montantVerse = $request->request->get('montantVerse');
+        $clientId = $request->request->get('client');
+        $dateAt = $request->request->get('dateAt');
 
-            if ($montant && $clientId && $dateAt) {
-                $client = $entityManager->getRepository(Client::class)->find($clientId);
+        $dette->setMontant((float)$montant);
+        $dette->setMontantVerse((float)$montantVerse);
+        $dette->setDateAt(new \DateTimeImmutable($dateAt));
+        $client = $entityManager->getRepository(Client::class)->find($clientId);
+        $dette->setClient($client);
 
-                if ($client) {
-                    $dette->setMontant((float)$montant);
-                    $dette->setMontantVerse((float)$montantVerse);
-                    $dette->setClient($client);
-                    $dette->setDateAt(new \DateTimeImmutable($dateAt)); // Utilisation de DateTimeImmutable
+        $errors = $validator->validate($dette);
 
-                    $entityManager->persist($dette);
-                    $entityManager->flush();
-
-                    return $this->redirectToRoute('dette_list');
-                } else {
-                    $this->addFlash('error', 'Client non trouvé.');
-                }
-            } else {
-                $this->addFlash('error', 'Veuillez remplir tous les champs requis.');
-            }
+        if (count($errors) > 0) {
+            return $this->render('dette/create.html.twig', [
+                'clients' => $clients,
+                'errors' => $errors,
+            ]);
         }
-        return $this->render('dette/create.html.twig', [
-            'clients' => $clients,
-        ]);
+
+        $entityManager->persist($dette);
+        $entityManager->flush();
+
+        return $this->redirectToRoute('dette_list');
     }
+
+    return $this->render('dette/create.html.twig', [
+        'clients' => $clients,
+    ]);
+}
 
     #[Route('/dette/list', name: 'dette_list')]
     public function list(Request $request, EntityManagerInterface $entityManager): Response
@@ -108,19 +111,16 @@ class DetteController extends AbstractController
             throw $this->createNotFoundException('Client non trouvé.');
         }
 
-        // Création de la requête pour récupérer les dettes du client
         $debtsQuery = $entityManager->getRepository(Dette::class)->createQueryBuilder('d')
             ->where('d.client = :clientId')
             ->setParameter('clientId', $clientId);
 
-        // Filtrer par date
         $dateAt = $request->query->get('dateAt');
         if ($dateAt) {
             $debtsQuery->andWhere('d.dateAt >= :dateAt')
                 ->setParameter('dateAt', new \DateTimeImmutable($dateAt));
         }
 
-        // Filtrer par statut
         $status = $request->query->get('status');
         if ($status === 'solde') {
             $debtsQuery->andWhere('d.montant = d.montantVerse');
@@ -128,7 +128,6 @@ class DetteController extends AbstractController
             $debtsQuery->andWhere('d.montant > d.montantVerse');
         }
 
-        // Pagination des résultats
         $dettes = $this->paginator->paginate(
             $debtsQuery->getQuery(),
             $request->query->getInt('page', 1),
@@ -140,64 +139,60 @@ class DetteController extends AbstractController
             'client' => $client,
             'currentPage' => $dettes->getCurrentPageNumber(),
             'totalPages' => ceil($dettes->getTotalItemCount() / 8),
-            'dateAt' => $dateAt, // Ajoutez cela si vous souhaitez passer la date au template
-            'status' => $status,  // Ajoutez cela si vous souhaitez passer le statut au template
+            'dateAt' => $dateAt,
+            'status' => $status,
         ]);
     }
 
 
     #[Route('/dette/{detteId}/paiement/create', name: 'create_paiement')]
-public function createPayment(int $detteId, Request $request, EntityManagerInterface $entityManager): Response
-{
-    $dette = $entityManager->getRepository(Dette::class)->find($detteId);
-    if (!$dette) {
-        throw $this->createNotFoundException('Dette non trouvée.');
-    }
-
-    if ($request->isMethod('POST')) {
-        $montant = $request->request->get('montant');
-        $dateAt = $request->request->get('dateAt');
-
-        if ($montant) {
-            $paiement = new Paiement();
-            $paiement->setMontant((float)$montant);
-            $paiement->setDateAt(new \DateTimeImmutable($dateAt)); // Utilisation de DateTimeImmutable
-            $paiement->setDette($dette);
-
-            // Mettre à jour le montant versé de la dette
-            $dette->setMontantVerse($dette->getMontantVerse() + $montant);
-
-            $entityManager->persist($paiement);
-            $entityManager->flush();
-
-            $this->addFlash('success', 'Paiement enregistré avec succès.');
-            return $this->redirectToRoute('dette_list'); 
-        } else {
-            $this->addFlash('error', 'Le montant est requis.');
+    public function createPayment(int $detteId, Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $dette = $entityManager->getRepository(Dette::class)->find($detteId);
+        if (!$dette) {
+            throw $this->createNotFoundException('Dette non trouvée.');
         }
+
+        if ($request->isMethod('POST')) {
+            $montant = $request->request->get('montant');
+            $dateAt = $request->request->get('dateAt');
+
+            if ($montant) {
+                $paiement = new Paiement();
+                $paiement->setMontant((float)$montant);
+                $paiement->setDateAt(new \DateTimeImmutable($dateAt)); 
+                $paiement->setDette($dette);
+
+                $dette->setMontantVerse($dette->getMontantVerse() + $montant);
+
+                $entityManager->persist($paiement);
+                $entityManager->flush();
+
+                $this->addFlash('success', 'Paiement enregistré avec succès.');
+                return $this->redirectToRoute('dette_list');
+            } else {
+                $this->addFlash('error', 'Le montant est requis.');
+            }
+        }
+
+        return $this->render('paiement/index.html.twig', [
+            'dette' => $dette,
+        ]);
     }
 
-    return $this->render('paiement/index.html.twig', [
-        'dette' => $dette,
-    ]);
-}
 
-
-#[Route('/dette/{id}', name: 'dette_details')]
+    #[Route('/dette/{id}', name: 'dette_details')]
     public function show(int $id, EntityManagerInterface $entityManager): Response
     {
-        // Récupérer la dette avec les paiements associés
         $dette = $entityManager->getRepository(Dette::class)->find($id);
 
         if (!$dette) {
             throw $this->createNotFoundException('La dette demandée n\'existe pas.');
         }
 
-        // Rendu de la vue avec les informations de la dette
         return $this->render('dette/details.html.twig', [
             'dette' => $dette,
             'paiements' => $dette->getPaiements(),
         ]);
     }
-
 }

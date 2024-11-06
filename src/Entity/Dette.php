@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
+
 #[ORM\Entity(repositoryClass: DetteRepository::class)]
 class Dette
 {
@@ -16,6 +17,7 @@ class Dette
     private ?int $id = null;
 
     #[ORM\Column]
+
     private ?float $montant = null;
 
     #[ORM\ManyToOne(inversedBy: 'dettes')]
@@ -28,9 +30,11 @@ class Dette
     private Collection $paiements;
 
     #[ORM\Column]
+
     private ?\DateTimeImmutable $dateAt = null;
 
     #[ORM\Column]
+
     private ?float $montantVerse = null;
 
     public function __construct()

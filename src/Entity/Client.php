@@ -6,8 +6,16 @@ use App\Repository\ClientRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Validator\Constraints as Assert;
+use Doctrine\DBAL\Types\Types;
+
+
+
 
 #[ORM\Entity(repositoryClass: ClientRepository::class)]
+#[UniqueEntity('surname',message:'{value} existe en base de donnee')]
+#[UniqueEntity('telephone',message:'{value} existe en base de donnee')]
 class Client
 {
     #[ORM\Id]
@@ -16,12 +24,18 @@ class Client
     private ?int $id = null;
 
     #[ORM\Column(length: 20 , unique: true)]
+    #[Assert\NotBlank(message:'Le surname est obligatoire')]
+
     private ?string $surname = null;
 
     #[ORM\Column(length: 15, unique:true)]
+    #[Assert\NotBlank(message:'Le telephone est obligatoire')]
+
     private ?string $telephone = null;
 
-    #[ORM\Column(length: 25)]
+    #[ORM\Column(length: 25 ,type: Types::TEXT)]
+    #[Assert\NotBlank(message:'L/adresse est obligatoire')]
+
     private ?string $adresse = null;
 
     /**

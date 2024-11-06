@@ -71,7 +71,7 @@
 				<ul class="pagination">
 					{% if currentPage > 1 %}
 						<li class="page-item">
-							<a class="btn btn-info" href="{{ path('dette_list', { page: currentPage - 1, clientId: clientId, Date: Date, status: status }) }}">Précédent</a>
+							<a class="btn btn-info" href="{{ path('dette_list', { page: currentPage - 1, clientId: clientId, dateAt: dateAt, status: status }) }}">Précédent</a>
 						</li>
 					{% endif %}
 
