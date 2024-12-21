@@ -7,9 +7,13 @@ use App\Entity\Dette;
 use App\Entity\User;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class ClientFixtures extends Fixture
 {
+    public function __construct(private UserPasswordHasherInterface $encoder) {
+      
+    }
     public function load(ObjectManager $manager): void
     {
         for ($i = 1; $i <= 20; $i++) {
@@ -21,9 +25,13 @@ class ClientFixtures extends Fixture
             if ($i % 2 == 0) {
                 $user = new User();
                 $user->setLogin('login' . $i);
-                $user->setPassword('password');
-                $user->setNom('nom' . $i);       // Assurez-vous d'attribuer un 'nom'
-                $user->setPreNom('prenom' . $i);  // Assurez-vous d'attribuer un 'prenom'
+                $passwordHasher=$this->encoder->hashPassword($user,'password');
+                $user->setPassword($passwordHasher);
+                $user->setNom('nom' . $i);      
+                $user->setPreNom('prenom' . $i);
+                $random=rand(0,1);
+                $roles=$random==1?['ROLE_BOUTIQUIER','ROLE_CLIENT']:['ROLE_CLIENT'];
+                $user->setRoles($roles);
                 $client->setCompte($user);
 
                 for ($j = 1; $j <= 10; $j++) {

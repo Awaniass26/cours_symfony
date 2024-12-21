@@ -21,7 +21,7 @@
         "symfony/doctrine-messenger": "7.1.*",
         "symfony/dotenv": "7.1.*",
         "symfony/expression-language": "7.1.*",
-        "symfony/flex": "^2",
+        "symfony/flex": "^2.4",
         "symfony/form": "7.1.*",
         "symfony/framework-bundle": "7.1.*",
         "symfony/http-client": "7.1.*",
@@ -85,11 +85,9 @@
             "php bin/console doctrine:fixtures:load -n"],
 
         "auto-scripts": {
-        
             "cache:clear": "symfony-cmd",
             "assets:install %PUBLIC_DIR%": "symfony-cmd",
             "importmap:install": "symfony-cmd"
-            
         },
         "post-install-cmd": [
             "@auto-scripts"

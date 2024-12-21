@@ -31,7 +31,7 @@ class Client
     #[ORM\Column(length: 15, unique:true)]
     #[Assert\NotBlank(message:'Le telephone est obligatoire')]
 
-    private ?string $telephone = null;
+    private ?string $telephone = null;  
 
     #[ORM\Column(length: 25 ,type: Types::TEXT)]
     #[Assert\NotBlank(message:'L/adresse est obligatoire')]
